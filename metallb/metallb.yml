@@ -1,0 +1,19 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: home-ip-pool
+  namespace: metallb-system
+spec:
+  addresses:
+  - 192.168.2.120-192.168.2.150  # 分配给 LoadBalancer 的外部 IP
+
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: l2-advertisement
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+  - home-ip-pool
+

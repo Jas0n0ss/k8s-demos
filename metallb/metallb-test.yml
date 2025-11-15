@@ -1,0 +1,45 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lab  # 测试用命名空间
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: lab
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: ikubernetes/myapp:v1
+          ports:
+            - containerPort: 80
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-lb
+  namespace: lab
+spec:
+  type: LoadBalancer             # LoadBalancer 类型让 MetalLB 分配外部 IP
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 80                   # Service 端口
+      targetPort: 80             # Pod 端口
+ #loadBalancerIP: x.x.x.x  # 测试用静态 IP，可替换为你的 MetalLB IP 池中的任意地址
+  loadBalancerIP:                # 测试用静态 IP，可替换为你的 MetalLB IP 池中的任意地址
+

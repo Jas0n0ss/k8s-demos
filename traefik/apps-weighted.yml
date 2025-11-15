@@ -1,0 +1,222 @@
+# apps-weighted.yml
+---
+# Deployment v1
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp-v1
+  namespace: demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: myapp
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: myapp
+        version: v1
+    spec:
+      containers:
+        - name: myapp
+          image: nginx:alpine
+          env:
+            - name: VERSION
+              value: v1
+          volumeMounts:
+            - name: index
+              mountPath: /usr/share/nginx/html/index.html
+              subPath: index.html
+      volumes:
+        - name: index
+          configMap:
+            name: myapp-v1-index
+---
+# ConfigMap for v1
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myapp-v1-index
+  namespace: demo
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <body>
+    <h1>Version: v1</h1>
+    </body>
+    </html>
+---
+# Service v1
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-v1
+  namespace: demo
+spec:
+  selector:
+    app: myapp
+    version: v1
+  ports:
+    - port: 80
+      targetPort: 80
+---
+# Deployment v2
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp-v2
+  namespace: demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: myapp
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: myapp
+        version: v2
+    spec:
+      containers:
+        - name: myapp
+          image: nginx:alpine
+          env:
+            - name: VERSION
+              value: v2
+          volumeMounts:
+            - name: index
+              mountPath: /usr/share/nginx/html/index.html
+              subPath: index.html
+      volumes:
+        - name: index
+          configMap:
+            name: myapp-v2-index
+---
+# ConfigMap for v2
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myapp-v2-index
+  namespace: demo
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <body>
+    <h1>Version: v2</h1>
+    </body>
+    </html>
+---
+# Service v2
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-v2
+  namespace: demo
+spec:
+  selector:
+    app: myapp
+    version: v2
+  ports:
+    - port: 80
+      targetPort: 80
+---
+# Deployment v3
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp-v3
+  namespace: demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: myapp
+      version: v3
+  template:
+    metadata:
+      labels:
+        app: myapp
+        version: v3
+    spec:
+      containers:
+        - name: myapp
+          image: nginx:alpine
+          env:
+            - name: VERSION
+              value: v3
+          volumeMounts:
+            - name: index
+              mountPath: /usr/share/nginx/html/index.html
+              subPath: index.html
+      volumes:
+        - name: index
+          configMap:
+            name: myapp-v3-index
+---
+# ConfigMap for v3
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myapp-v3-index
+  namespace: demo
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <body>
+    <h1>Version: v3</h1>
+    </body>
+    </html>
+---
+# Service v3
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-v3
+  namespace: demo
+spec:
+  selector:
+    app: myapp
+    version: v3
+  ports:
+    - port: 80
+      targetPort: 80
+---
+# Traefik Weighted Service
+apiVersion: traefik.io/v1alpha1
+kind: TraefikService
+metadata:
+  name: myapp
+  namespace: demo
+spec:
+  weighted:
+    services:
+      - name: myapp-v1
+        port: 80
+        weight: 50
+      - name: myapp-v2
+        port: 80
+        weight: 30
+      - name: myapp-v3
+        port: 80
+        weight: 20
+---
+# IngressRoute pointing to TraefikService
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: myapp
+  namespace: demo
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: PathPrefix(`/`)
+      kind: Rule
+      services:
+        - name: myapp
+          kind: TraefikService
