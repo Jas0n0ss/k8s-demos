@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: traefik-pv
+  namespace: traefik
+spec:
+  capacity:
+    storage: 164Mi  # 设置持久化存储的大小
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce  # 设置访问模式，可以是 ReadOnlyMany, ReadWriteMany 等
+  persistentVolumeReclaimPolicy: Retain  # 数据删除后保留 PV
+  storageClassName: local-storage  # 如果你有自定义 StorageClass，设置这个
+  hostPath:
+    path: "/mnt/disks/traefik"  # 使用主机的路径作为持久存储
+    type: DirectoryOrCreate  # 如果路径不存在会创建
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: traefik-pvc
+  namespace: traefik
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 128Mi  # PVC 请求存储大小
+  volumeMode: Filesystem
+  storageClassName: local-storage  # 应该与 PV 中的 StorageClass 一致
+

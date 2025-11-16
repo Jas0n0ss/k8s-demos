@@ -1,0 +1,10 @@
+helm install traefik traefik/traefik \
+  --namespace traefik --create-namespace \
+  --set ports.web.nodePort=32080 \
+  --set ports.websecure.nodePort=32443 \
+  --set service.type=NodePort \
+  --set persistence.enabled=true \
+  --set persistence.size=128Mi \
+  --set persistence.storageClass=local-path \  # 使用 local-path StorageClass
+  --set additionalArguments="{\"--certificatesresolvers.le.acme.httpchallenge\":true,\"--certificatesresolvers.le.acme.httpchallenge.entrypoint\":\"web\",\"--certificatesresolvers.le.acme.email\":\"azure@msft.org\",\"--certificatesresolvers.le.acme.storage\":\"/data/acme.json\"}"
+
