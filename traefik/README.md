@@ -7,8 +7,9 @@ kubectl create ns traefik
 helm install traefik traefik/traefik --namespace traefik
 ```
 #### https://doc.traefik.io/traefik/reference/install-configuration/providers/kubernetes/kubernetes-crd/
-#kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v3.6/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
-
+```
+kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v3.6/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
+```
 #### Traefik + LetsEncrypt + 持久化（本地或 NFS）安装脚本
 ```bash
 helm upgrade --install traefik traefik/traefik \
