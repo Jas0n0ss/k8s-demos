@@ -2,11 +2,10 @@ name: Update Directory TOC
 
 on:
   push:
+    # Trigger on all file changes except README.md
     paths:
       - '**/*'
-    # Prevent triggering on README updates by this workflow
-    paths-ignore:
-      - README.md
+    # Remove paths-ignore (cannot coexist with paths)
   workflow_dispatch:
 
 jobs:
