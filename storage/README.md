@@ -1,46 +1,38 @@
+# Kubernetes 存储指南
+
 ## 📌 内容目录
 
-- [Kubernetes 存储类型概览](#kubernetes-存储类型概览)
-- [1. EmptyDir](#1-emptydir)
-- [2. HostPath](#2-hostpath)
-- [3. NFS](#3-nfs)
-- [4. Ceph RBD / CephFS](#4-ceph-rbd--cephfs)
-- [5. Local Persistent Volume](#5-local-persistent-volume)
-- [6. CSI 驱动（云厂商）](#6-csi-驱动云厂商)
-- [7. Longhorn](#7-longhorn)
-- [8. OpenEBS](#8-openebs)
+- [Kubernetes 存储类型概览](https://github.com/Jas0n0ss/k8s-demos/tree/main/storage#kubernetes-存储类型概览)
+- [1. EmptyDir](https://github.com/Jas0n0ss/k8s-demos/tree/main/storage#1-emptydir)
+- [2. HostPath](https://github.com/Jas0n0ss/k8s-demos/tree/main/storage#2-hostpath)
+- [3. NFS](https://github.com/Jas0n0ss/k8s-demos/tree/main/storage#3-nfs)
+- [4. Ceph RBD / CephFS](https://github.com/Jas0n0ss/k8s-demos/tree/main/storage#4-ceph-rbd--cephfs)
+- [5. Local Persistent Volume](https://github.com/Jas0n0ss/k8s-demos/tree/main/storage#5-local-persistent-volume)
+- [6. CSI 驱动（云厂商）](https://github.com/Jas0n0ss/k8s-demos/tree/main/storage#6-csi-驱动云厂商)
+- [7. Longhorn](https://github.com/Jas0n0ss/k8s-demos/tree/main/storage#7-longhorn)
+- [8. OpenEBS](https://github.com/Jas0n0ss/k8s-demos/tree/main/storage#8-openebs)
 
 ------
 
 ## Kubernetes 存储类型概览
 
-| 类型                   | 描述                          | 典型使用场景                              |
-| ---------------------- | ----------------------------- | ----------------------------------------- |
-| **EmptyDir**           | 与 Pod 生命周期绑定的临时存储 | 缓存、临时文件、中间计算结果              |
-| **HostPath**           | 直接读取节点本地文件系统      | 本地开发、单节点集群、调试测试            |
-| **NFS**                | 网络共享文件系统              | 多 Pod 共享文件、共享配置、轻量级生产环境 |
-| **Ceph RBD / CephFS**  | 分布式块存储与文件存储        | 企业级生产、数据库、海量数据、高可用      |
-| **Local PV**           | 使用节点本地磁盘作为持久卷    | 高 IOPS/低延迟数据库任务、分析型工作负载  |
-| **CSI 驱动（云厂商）** | 云原生标准化存储接口          | 云上生产环境、动态创建磁盘/NAS            |
-| **Longhorn**           | 轻量级分布式存储（CNCF）      | K3s、边缘集群、无专用存储设备             |
-| **OpenEBS**            | 容器原生本地存储              | 数据库、边缘节点、高性能本地磁盘          |
+| 类型               | 描述                          | 典型使用场景                     |
+| ------------------ | ----------------------------- | -------------------------------- |
+| EmptyDir           | 临时存储，与 Pod 生命周期绑定 | 缓存、临时文件、中间计算结果     |
+| HostPath           | 节点本地目录                  | 本地开发、调试、快速实验         |
+| NFS                | 网络共享文件系统              | 多 Pod 共享文件、轻量级生产环境  |
+| Ceph RBD / CephFS  | 分布式块存储与文件存储        | 企业级数据库、高可用、可扩展     |
+| Local PV           | 节点本地磁盘                  | 高性能数据库、低延迟应用         |
+| CSI 驱动（云厂商） | 云原生存储接口                | 云上生产环境、动态创建磁盘/NAS   |
+| Longhorn           | 轻量级分布式存储              | K3s、边缘集群、无专用存储设备    |
+| OpenEBS            | 容器原生本地存储              | 数据库、边缘节点、高性能本地磁盘 |
 
 ------
 
 # 1. EmptyDir
 
-### 📘 官方文档
-
-https://kubernetes.io/docs/concepts/storage/volumes/#emptydir
-
-### 📝 使用场景
-
-- Web 应用缓存目录
-- CI/CD 构建的临时文件
-- 中间计算产物（如数据处理任务）
-- 不适合用来存储需要持久化的数据
-
-### 🚀 示例 YAML
+- 官方文档: https://kubernetes.io/docs/concepts/storage/volumes/#emptydir
+- YAML 示例:
 
 ```yaml
 apiVersion: v1
@@ -59,22 +51,10 @@ spec:
       emptyDir: {}
 ```
 
-------
-
 # 2. HostPath
 
-### 📘 官方文档
-
-https://kubernetes.io/docs/concepts/storage/volumes/#hostpath
-
-### 📝 使用场景
-
-- 本地开发环境（minikube、kind）
-- 直接读取节点上的日志或目录
-- 调试、快速实验
-- ⚠️ **生产环境不推荐使用**（不可移植、存在风险）
-
-### 🚀 示例 YAML
+- 官方文档: https://kubernetes.io/docs/concepts/storage/volumes/#hostpath
+- YAML 示例:
 
 ```yaml
 apiVersion: v1
@@ -96,37 +76,20 @@ spec:
         type: DirectoryOrCreate
 ```
 
-------
-
 # 3. NFS
 
-### 📘 官方文档
+- 官方文档: https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner
+- 安装 StorageClass:
 
-https://kubernetes.io/docs/concepts/storage/volumes/#nfs
+```bash
+helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
+helm install nfs-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
+  --set nfs.server=192.168.1.10 --set nfs.path=/export/data
+```
 
-### 📝 使用场景
-
-- 多 Pod 或多实例共享同一目录（RWX）
-- 存储静态文件、共享配置、日志
-- 适用于中小规模集群和轻量级生产系统
-- 性能不及分布式存储（如 Ceph）
-
-### 🚀 示例 YAML（已有 NFS 服务器）
+- PVC 和 Pod 示例:
 
 ```yaml
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: nfs-pv
-spec:
-  capacity:
-    storage: 5Gi
-  accessModes:
-    - ReadWriteMany
-  nfs:
-    server: 192.168.1.10
-    path: "/export/data"
----
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -156,177 +119,74 @@ spec:
           mountPath: /mnt
 ```
 
-------
-
 # 4. Ceph RBD / CephFS
 
-### 📘 官方文档
+- 官方文档: https://github.com/ceph/ceph-csi
+- 安装 CSI 插件:
 
-- CephFS: https://docs.ceph.com/en/latest/cephfs/
-- RBD: https://docs.ceph.com/en/latest/rbd/
-- Kubernetes: https://kubernetes.io/docs/concepts/storage/volumes/#cephfs
-
-### 📝 使用场景
-
-- 企业级生产环境（高可用、可扩展）
-- 数据库（RBD 块存储）：MySQL / PostgreSQL / MongoDB
-- 分布式文件共享（CephFS）
-- 大规模集群、可靠性与扩容要求高的场景
-- 与 Rook 配合形成原生 Kubernetes 存储系统
-
-### 🚀 示例 YAML（Ceph CSI）
-
-```yaml
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: cephfs-pvc
-spec:
-  accessModes:
-    - ReadWriteMany
-  storageClassName: cephfs-sc
-  resources:
-    requests:
-      storage: 5Gi
+```bash
+kubectl apply -f https://raw.githubusercontent.com/ceph/ceph-csi/devel/deploy/rbd/kubernetes/csi-rbdplugin.yaml
+kubectl apply -f https://raw.githubusercontent.com/ceph/ceph-csi/devel/deploy/cephfs/kubernetes/csi-cephfsplugin.yaml
 ```
 
-------
+- StorageClass 示例:
+
+```yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: rook-ceph-block
+provisioner: rook-ceph.rbd.csi.ceph.com
+parameters:
+  pool: replicapool
+  imageFeatures: layering
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+```
 
 # 5. Local Persistent Volume
 
-### 📘 官方文档
-
-https://kubernetes.io/docs/concepts/storage/volumes/#local
-
-### 📝 使用场景
-
-- 高性能存储（NVMe/SSD）
-- 数据库（如 ClickHouse、Elasticsearch、Kafka）
-- 延迟敏感型应用
-- ⚠️ 不支持多节点容错（仅适用于单节点持久性需求）
-
-### 🚀 示例 YAML
+- StorageClass 示例:
 
 ```yaml
-apiVersion: v1
-kind: PersistentVolume
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
 metadata:
-  name: local-pv
-spec:
-  capacity:
-    storage: 10Gi
-  volumeMode: Filesystem
-  accessModes:
-    - ReadWriteOnce
-  storageClassName: local-storage
-  local:
-    path: /mnt/disks/ssd1
-  nodeAffinity:
-    required:
-      nodeSelectorTerms:
-        - matchExpressions:
-            - key: kubernetes.io/hostname
-              operator: In
-              values:
-                - node1
+  name: local-storage
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
 ```
-
-------
 
 # 6. CSI 驱动（云厂商）
 
-Kubernetes 的主流存储方式，支持动态创建、快照、扩容等能力。
+- 官方文档:
+  - AWS EBS: https://github.com/kubernetes-sigs/aws-ebs-csi-driver/tree/master/docs
+  - GCP PD: https://github.com/kubernetes-sigs/gcp-compute-persistent-disk-csi-driver
+  - Azure Disk: https://github.com/kubernetes-sigs/azuredisk-csi-driver
+  - Alibaba Cloud: https://github.com/kubernetes-sigs/alibaba-cloud-csi-driver
+- 安装示例（AWS）:
 
-### 📝 使用场景
-
-- 所有云平台上的生产环境
-- 持久化磁盘（块存储）
-- 文件存储（NAS）
-- 动态扩容、备份、快照需求
-
-### 👉 常见云厂商 CSI
-
-| 云平台          | CSI 项目地址                                                 |
-| --------------- | ------------------------------------------------------------ |
-| AWS EBS         | https://github.com/kubernetes-sigs/aws-ebs-csi-driver        |
-| Google Cloud PD | https://github.com/kubernetes-sigs/gcp-compute-persistent-disk-csi-driver |
-| Azure Disk      | https://github.com/kubernetes-sigs/azuredisk-csi-driver      |
-| Alibaba Cloud   | https://github.com/kubernetes-sigs/alibaba-cloud-csi-driver  |
-
-### 🚀 示例 YAML
-
-```yaml
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: csi-pvc
-spec:
-  accessModes: ["ReadWriteOnce"]
-  storageClassName: csi-standard
-  resources:
-    requests:
-      storage: 20Gi
+```bash
+kubectl apply -k "github.com/kubernetes-sigs/aws-ebs-csi-driver/deploy/kubernetes/overlays/stable/ecr/?ref=release-1.36"
 ```
-
-------
 
 # 7. Longhorn
 
-### 📘 官方文档
+- 官方文档: https://longhorn.io/docs/
+- 安装命令:
 
-https://longhorn.io/
-
-### 📝 使用场景
-
-- K3s / 边缘节点集群
-- 无专用存储硬件的环境
-- 简易部署的本地分布式存储
-- Homelab / 小型生产环境
-
-### 🚀 示例 YAML
-
-```yaml
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: longhorn-pvc
-spec:
-  storageClassName: longhorn
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 5Gi
+```bash
+helm repo add longhorn https://charts.longhorn.io
+helm install longhorn longhorn/longhorn --namespace longhorn-system --create-namespace
 ```
-
-------
 
 # 8. OpenEBS
 
-### 📘 官方文档
+- 官方文档: https://openebs.io/docs/
+- 安装命令:
 
-https://openebs.io/
-
-### 📝 使用场景
-
-- 各类数据库（MySQL、PostgreSQL、MongoDB）本地持久化
-- 边缘节点、混合环境
-- 自由选择不同引擎（Jiva、cStor、Mayastor）
-- 专注单节点或本地高性能存储
-
-### 🚀 示例 YAML
-
-```yaml
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: openebs-pvc
-spec:
-  storageClassName: openebs-hostpath
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 5Gi
+```bash
+helm repo add openebs https://openebs.github.io/charts
+helm install openebs openebs/openebs
 ```
 
