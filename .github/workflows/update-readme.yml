@@ -1,0 +1,101 @@
+name: Update README Navigation
+
+on:
+  push:
+    branches:
+      - main  # 根据你的默认分支调整，例如 master
+    paths:
+      - '**'  # 监听所有文件的更改，确保目录结构变化能触发
+      - '!README.md'  # 排除 README.md 自身，避免无限循环
+      - '!.github/workflows/update-readme.yml' # 排除自身，避免无限循环
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }} # 使用 GITHUB_TOKEN 进行推送
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Generate new navigation
+        run: |
+          # 定义一个 Python 脚本，用于生成目录导航
+          python << 'EOF'
+          import os
+          from urllib.parse import quote
+
+          def generate_toc(directory='.', max_depth=3, current_depth=0):
+              toc = []
+              if current_depth >= max_depth:
+                  return toc
+              
+              items = sorted(os.listdir(directory))
+              for item in items:
+                  if item.startswith('.') or item == 'README.md':
+                      continue
+                  path = os.path.join(directory, item)
+                  relative_path = os.path.relpath(path, '.')
+                  # 生成锚点链接，转换为小写，空格和特殊字符转为连字符
+                  anchor = quote(relative_path.lower().replace(' ', '-').replace('_', '-').replace('/', '-'))
+                  
+                  indent = '  ' * current_depth
+                  if os.path.isdir(path):
+                      toc.append(f"{indent}- [{item}](#{anchor})")
+                      toc.extend(generate_toc(path, max_depth, current_depth + 1))
+                  else:
+                      # 对于文件，不递归
+                      if current_depth > 0: # 只在子目录中添加文件
+                          toc.append(f"{indent}- [{item}](#{anchor})")
+              return toc
+
+          # 生成目录列表
+          toc_lines = generate_toc()
+
+          # 读取原始 README 内容
+          with open('README.md', 'r', encoding='utf-8') as f:
+              content = f.read()
+
+          # 分割内容，找到需要替换的部分
+          # 假设导航部分在 "---" 和 "##" 之间
+          parts = content.split('---\n## 📂 目录导航\n\n')
+          if len(parts) < 2:
+              print("Error: Could not find the navigation section in README.md")
+              exit(1)
+          
+          before_nav = parts[0] + '---\n## 📂 目录导航\n\n'
+          # 找到下一个 "##" 标题，作为导航部分的结束
+          remaining_content = parts[1]
+          end_marker_index = remaining_content.find('\n## ')
+          if end_marker_index == -1:
+              # 如果没找到，说明导航部分一直到最后一个 "##" 之前
+              end_marker_index = len(remaining_content)
+          
+          after_nav = remaining_content[end_marker_index:]
+
+          # 合并新内容
+          new_content = before_nav + '\n'.join(toc_lines) + '\n\n---' + after_nav
+
+          # 写回 README.md
+          with open('README.md', 'w', encoding='utf-8') as f:
+              f.write(new_content)
+          print("README.md navigation updated successfully.")
+          EOF
+
+      - name: Commit and push if changed
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add README.md
+          if git diff --staged --quiet README.md; then
+            echo "No changes to commit."
+          else
+            git commit -m "docs: auto-update README navigation [skip ci]"
+            git push
+            echo "README.md updated and pushed."
+          fi
