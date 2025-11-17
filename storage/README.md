@@ -1,14 +1,16 @@
 ## 📌 内容目录
 
-- [Kubernetes 存储类型概览](https://chatgpt.com/c/691ab8af-4bc0-8328-b3b8-b5ca6e256974#kubernetes-存储类型概览)
-- [1. EmptyDir](https://chatgpt.com/c/691ab8af-4bc0-8328-b3b8-b5ca6e256974#1-emptydir)
-- [2. HostPath](https://chatgpt.com/c/691ab8af-4bc0-8328-b3b8-b5ca6e256974#2-hostpath)
-- [3. NFS](https://chatgpt.com/c/691ab8af-4bc0-8328-b3b8-b5ca6e256974#3-nfs)
-- [4. Ceph RBD / CephFS](https://chatgpt.com/c/691ab8af-4bc0-8328-b3b8-b5ca6e256974#4-ceph-rbd--cephfs)
-- [5. Local Persistent Volume](https://chatgpt.com/c/691ab8af-4bc0-8328-b3b8-b5ca6e256974#5-local-persistent-volume)
-- [6. CSI 驱动（云厂商）](https://chatgpt.com/c/691ab8af-4bc0-8328-b3b8-b5ca6e256974#6-csi-驱动云厂商)
-- [7. Longhorn](https://chatgpt.com/c/691ab8af-4bc0-8328-b3b8-b5ca6e256974#7-longhorn)
-- [8. OpenEBS](https://chatgpt.com/c/691ab8af-4bc0-8328-b3b8-b5ca6e256974#8-openebs)
+- ## 📌 内容目录
+
+  - [Kubernetes 存储类型概览](#kubernetes-存储类型概览)
+  - [1. EmptyDir](#1-emptydir)
+  - [2. HostPath](#2-hostpath)
+  - [3. NFS](#3-nfs)
+  - [4. Ceph RBD / CephFS](#4-ceph-rbd--cephfs)
+  - [5. Local Persistent Volume](#5-local-persistent-volume)
+  - [6. CSI 驱动（云厂商）](#6-csi-驱动云厂商)
+  - [7. Longhorn](#7-longhorn)
+  - [8. OpenEBS](#8-openebs)
 
 ------
 
@@ -329,5 +331,4 @@ spec:
     requests:
       storage: 5Gi
 ```
-
 
