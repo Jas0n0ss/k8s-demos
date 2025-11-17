@@ -2,10 +2,8 @@ name: Update Directory TOC
 
 on:
   push:
-    # Trigger on all file changes except README.md
-    paths:
-      - '**/*'
-    # Remove paths-ignore (cannot coexist with paths)
+    branches:
+      - main   # ✅ Only run on main branch
   workflow_dispatch:
 
 jobs:
@@ -13,21 +11,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # ✅ Checkout repository with PAT
+      # ✅ Checkout repository using GITHUB_TOKEN
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          token: ${{ secrets.PAT_TOKEN }}  # PAT with repo scope
+          token: ${{ secrets.GITHUB_TOKEN }}  # ✅ No PAT required
           persist-credentials: true
           fetch-depth: 1
-          repository: Jas0n0ss/k8s-demos
-          ssh-strict: true
-          clean: true
-          sparse-checkout-cone-mode: true
-          fetch-tags: false
-          lfs: false
-          submodules: false
-          set-safe-directory: true
 
       # ✅ Configure Git user
       - name: Configure Git user
@@ -47,7 +37,7 @@ jobs:
 
       # ✅ Commit and push changes only if README.md changed
       - name: Commit and push changes
-        if: github.actor != 'github-actions[bot]' # Prevent infinite loop
+        if: github.actor != 'github-actions[bot]' # ✅ Prevent infinite loop
         run: |
           git add README.md
           if ! git diff --cached --quiet; then
