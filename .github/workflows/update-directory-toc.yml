@@ -3,27 +3,33 @@ name: Update Directory TOC
 on:
   push:
     paths:
-      - '**/*'
-  workflow_dispatch:
+      - '**/*'  # 任意文件或目录变化
+  workflow_dispatch:  # 可手动触发
 
 jobs:
   update-toc:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout 仓库
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          token: ${{ secrets.PAT_TOKEN }}  # 用 PAT 替代默认 token
+          token: ${{ secrets.PAT_TOKEN }}  # 使用 Personal Access Token
+          persist-credentials: true
+          fetch-depth: 1
 
+      # 2️⃣ 安装 Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
+      # 3️⃣ 生成 TOC + Headers
       - name: Generate README TOC and headers
         run: python scripts/generate_directory_toc.py
 
+      # 4️⃣ 提交并推送 README 更新
       - name: Commit and push changes
         run: |
           git add README.md

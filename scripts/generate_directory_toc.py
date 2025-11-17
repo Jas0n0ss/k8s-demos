@@ -10,7 +10,7 @@ HDR_END = "<!-- DIRECTORY HEADERS END -->"
 
 def github_anchor(name):
     anchor = name.lower()
-    anchor = re.sub(r"[^\w\s-]", "", anchor)
+    anchor = re.sub(r"[^\w\s-]", "", anchor)  # 移除特殊字符
     anchor = anchor.replace(" ", "-")
     return anchor
 
