@@ -23,11 +23,12 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Generate new navigation
+      - name: Generate new navigation and update README
         run: |
-          # 定义一个 Python 脚本，用于生成目录导航
+          # 定义一个 Python 脚本，用于生成目录导航并更新 README
           python << 'EOF'
           import os
+          import re
           from urllib.parse import quote
 
           def generate_toc(directory='.', max_depth=3, current_depth=0):
@@ -49,41 +50,41 @@ jobs:
                       toc.append(f"{indent}- [{item}](#{anchor})")
                       toc.extend(generate_toc(path, max_depth, current_depth + 1))
                   else:
-                      # 对于文件，不递归
+                      # 对于文件，不递归，但添加到当前层级
                       if current_depth > 0: # 只在子目录中添加文件
                           toc.append(f"{indent}- [{item}](#{anchor})")
               return toc
 
-          # 生成目录列表
-          toc_lines = generate_toc()
+          # 生成新的导航内容
+          new_toc_lines = generate_toc()
+          new_toc_content = '\n'.join(new_toc_lines)
 
           # 读取原始 README 内容
           with open('README.md', 'r', encoding='utf-8') as f:
               content = f.read()
 
-          # 分割内容，找到需要替换的部分
-          # 假设导航部分在 "---" 和 "##" 之间
-          parts = content.split('---\n## 📂 目录导航\n\n')
-          if len(parts) < 2:
+          # 使用正则表达式查找并替换导航部分
+          # 匹配从 "## 📂 目录导航" 开始，到下一个 "## " 或文件结尾的内容
+          # re.DOTALL 使得 . 可以匹配换行符
+          pattern = r'(## 📂 目录导航\n\n).*?(\n---\n)'
+          match = re.search(pattern, content, re.DOTALL)
+
+          if not match:
               print("Error: Could not find the navigation section in README.md")
+              print("Expected format: '## 📂 目录导航\\n\\n' followed by content and '\\n---\\n'")
               exit(1)
           
-          before_nav = parts[0] + '---\n## 📂 目录导航\n\n'
-          # 找到下一个 "##" 标题，作为导航部分的结束
-          remaining_content = parts[1]
-          end_marker_index = remaining_content.find('\n## ')
-          if end_marker_index == -1:
-              # 如果没找到，说明导航部分一直到最后一个 "##" 之前
-              end_marker_index = len(remaining_content)
+          # 替换匹配到的部分
+          before_match = content[:match.start(1)] # "## 📂 目录导航" 之前的部分
+          after_match = content[match.end(2):]    # "---" 之后的部分
           
-          after_nav = remaining_content[end_marker_index:]
-
-          # 合并新内容
-          new_content = before_nav + '\n'.join(toc_lines) + '\n\n---' + after_nav
+          # 重组内容
+          updated_content = before_match + "## 📂 目录导航\n\n" + new_toc_content + "\n" + after_match
 
           # 写回 README.md
           with open('README.md', 'w', encoding='utf-8') as f:
-              f.write(new_content)
+              f.write(updated_content)
+          
           print("README.md navigation updated successfully.")
           EOF
 
