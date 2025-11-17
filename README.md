@@ -1,25 +1,26 @@
-# Kubernetes 实践项目集合
+### Kubernetes 实践项目集合
 
 > 一个结构化、可快速导航的 Kubernetes 实用组件与应用示例集合，涵盖网络、存储、应用部署等核心场景。
 
 ---
 
-## 目录导航
+#### Centent
 
-<!-- NAVIGATION PLACEHOLDER - DO NOT REMOVE -->
 - [network](#network)
-  - [ingress-nginx](#ingress-nginx)
-  - [metallb](#metallb)
-  - [traefik](#traefik)
 
-- [storage](#storage)
-  - [local-path-storage](#local-path-storage)
-  - [nfs-client-provisioner](#nfs-client-provisioner)
-  - [nfs-provisioner](#nfs-provisioner)
+  - [ingress-nginx](network/ingress-nginx)
+  - [metallb](network/metallb)
+  - [traefik](network/traefik)
 
-- [apps](#apps)
-  - [alibabacloud-microservice-demo](#alibabacloud-microservice-demo)
+- [storage](storage)
 
-  - [kubernetes-sample-apps](#kubernetes-sample-apps)
-    <!-- END NAVIGATION PLACEHOLDER -->
+  - [local-path-storage](storage/local-path-storage)
+  - [nfs-client-provisioner](storage/nfs-client-provisioner)
+  - [nfs-provisioner](storage/lnfs-provisioner)
+
+- [apps](apps)
+
+  - [alibabacloud-microservice-demo](storage/alibabacloud-microservice-demo)
+
+  - [kubernetes-sample-apps](storage/kubernetes-sample-apps)
 
