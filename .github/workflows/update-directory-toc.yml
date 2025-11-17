@@ -4,6 +4,9 @@ on:
   push:
     paths:
       - '**/*'
+    # Prevent triggering on README updates by this workflow
+    paths-ignore:
+      - README.md
   workflow_dispatch:
 
 jobs:
@@ -11,28 +14,45 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # ✅ Checkout repository with PAT
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          token: ${{ secrets.PAT_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }}  # PAT with repo scope
           persist-credentials: true
           fetch-depth: 1
+          repository: Jas0n0ss/k8s-demos
+          ssh-strict: true
+          clean: true
+          sparse-checkout-cone-mode: true
+          fetch-tags: false
+          lfs: false
+          submodules: false
+          set-safe-directory: true
 
+      # ✅ Configure Git user
       - name: Configure Git user
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
+      # ✅ Setup Python
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
+      # ✅ Generate TOC
       - name: Generate README TOC and headers
         run: python scripts/generate_directory_toc.py
 
+      # ✅ Commit and push changes only if README.md changed
       - name: Commit and push changes
+        if: github.actor != 'github-actions[bot]' # Prevent infinite loop
         run: |
           git add README.md
-          git diff --cached --quiet || git commit -m "Update directory TOC and headers"
-          git push origin HEAD:${GITHUB_REF}
+          if ! git diff --cached --quiet; then
+            git commit -m "Update directory TOC and headers"
+            git push origin HEAD:${GITHUB_REF}
+          else
+            echo "No changes detected in README.md"
