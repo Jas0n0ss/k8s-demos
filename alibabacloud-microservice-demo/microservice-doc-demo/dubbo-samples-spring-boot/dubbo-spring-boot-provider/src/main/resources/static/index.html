@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dubbo服务端</title>
+
+</head>
+<script src="https://cdn.jsdelivr.net/npm/ractive"></script>
+<link rel="stylesheet" href="/css/edas-demo.css"/>
+<body>
+
+<div id="welcome-page">
+
+    <div class="detection-result"></div>
+    <script id="detection" type="text/reactive">
+    您好，这是 EDAS <b>Dubbo服务端</b> 的样例程序页面.<br>
+
+
+    </script>
+    <div>
+        <h2>官方文档：</h2>
+        <div class="docs-container"></div>
+    </div>
+</div>
+
+<script id="docs" type="text/reactive">
+    <ol>
+    {{#each docs}}
+        <li><a target="_blank" href="{{link}}">{{title}}</a></li>
+    {{/each}}
+    </ol>
+
+
+</script>
+
+<script src="/javascript/edas-demo.js"></script>
+</body>
+</html>

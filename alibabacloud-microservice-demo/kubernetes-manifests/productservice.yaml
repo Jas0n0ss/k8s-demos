@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: productservice
+spec:
+  selector:
+    matchLabels:
+      app: productservice
+  template:
+    metadata:
+      labels:
+        app: productservice
+        version: 1.0.0-SNAPSHOT
+    spec:
+      containers:
+        - name: productservice
+          image: productservice:1.0.0-SNAPSHOT
+          env:
+            - name: dubbo.registry.address
+              value: "nacos://nacos-server:8848"
+            - name: spring.cloud.nacos.discovery.server-addr
+              value: "nacos-server:8848"
+            - name: spring.cloud.nacos.config.server-addr
+              value: "nacos-server:8848"
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-mysql
+spec:
+  selector:
+    matchLabels:
+      app: product-mysql
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: product-mysql
+    spec:
+      containers:
+        - args:
+            - --character-set-server=utf8mb4
+            - --collation-server=utf8mb4_unicode_ci
+          env:
+            - name: MYSQL_DATABASE
+              value: product
+            - name: MYSQL_ROOT_PASSWORD
+              value: productservice
+          image: mysql:5.6
+          name: product-mysql
+          ports:
+            - containerPort: 3306
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: product-mysql
+  name: product-mysql
+spec:
+  ports:
+    - port: 3306
+      targetPort: 3306
+  selector:
+    app: product-mysql

@@ -1,0 +1,8 @@
+apiVersion: V1
+kind: AppDeployment
+spec:
+  type: serverless
+  target:
+    appId:        bf6a4728-3182-47dc-8e45-4fd3d65b0a58
+    namespaceId:  cn-beijing
+    appName:      ms-demo-frontend

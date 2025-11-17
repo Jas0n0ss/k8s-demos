@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: checkoutservice
+spec:
+  selector:
+    matchLabels:
+      app: checkoutservice
+  template:
+    metadata:
+      labels:
+        app: checkoutservice
+    spec:
+      containers:
+        - name: checkoutservice
+          image: checkoutservice:1.0.0-SNAPSHOT
+          env:
+            - name: dubbo.registry.address
+              value: "nacos://nacos-server:8848"
+            - name: spring.cloud.nacos.discovery.server-addr
+              value: "nacos-server:8848"
+            - name: spring.cloud.nacos.config.server-addr
+              value: "nacos-server:8848"
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: checkout-mysql
+spec:
+  selector:
+    matchLabels:
+      app: checkout-mysql
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: checkout-mysql
+    spec:
+      containers:
+        - args:
+            - --character-set-server=utf8mb4
+            - --collation-server=utf8mb4_unicode_ci
+          env:
+            - name: MYSQL_DATABASE
+              value: checkout
+            - name: MYSQL_ROOT_PASSWORD
+              value: checkoutservice
+          image: mysql:5.6
+          name: checkout-mysql
+          ports:
+            - containerPort: 3306
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: checkout-mysql
+  name: checkout-mysql
+spec:
+  ports:
+    - port: 3306
+      targetPort: 3306
+  selector:
+    app: checkout-mysql

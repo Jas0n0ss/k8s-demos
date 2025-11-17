@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cartservice
+spec:
+  selector:
+    matchLabels:
+      app: cartservice
+  template:
+    metadata:
+      labels:
+        app: cartservice
+    spec:
+      containers:
+        - name: cartservice
+          image: cartservice:1.0.0-SNAPSHOT
+          env:
+            - name: dubbo.registry.address
+              value: "nacos://nacos-server:8848"
+            - name: spring.cloud.nacos.discovery.server-addr
+              value: "nacos-server:8848"
+            - name: spring.cloud.nacos.config.server-addr
+              value: "nacos-server:8848"
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cart-redis
+spec:
+  selector:
+    matchLabels:
+      app: cart-redis
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: cart-redis
+    spec:
+      containers:
+        - name: cart-redis
+          image: redis
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 6379
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: cart-redis
+  name: cart-redis
+spec:
+  ports:
+    - port: 6379
+      targetPort: 6379
+  selector:
+    app: cart-redis
