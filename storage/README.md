@@ -1,16 +1,14 @@
 ## 📌 内容目录
 
-- ## 📌 内容目录
-
-  - [Kubernetes 存储类型概览](#kubernetes-存储类型概览)
-  - [1. EmptyDir](#1-emptydir)
-  - [2. HostPath](#2-hostpath)
-  - [3. NFS](#3-nfs)
-  - [4. Ceph RBD / CephFS](#4-ceph-rbd--cephfs)
-  - [5. Local Persistent Volume](#5-local-persistent-volume)
-  - [6. CSI 驱动（云厂商）](#6-csi-驱动云厂商)
-  - [7. Longhorn](#7-longhorn)
-  - [8. OpenEBS](#8-openebs)
+- [Kubernetes 存储类型概览](#kubernetes-存储类型概览)
+- [1. EmptyDir](#1-emptydir)
+- [2. HostPath](#2-hostpath)
+- [3. NFS](#3-nfs)
+- [4. Ceph RBD / CephFS](#4-ceph-rbd--cephfs)
+- [5. Local Persistent Volume](#5-local-persistent-volume)
+- [6. CSI 驱动（云厂商）](#6-csi-驱动云厂商)
+- [7. Longhorn](#7-longhorn)
+- [8. OpenEBS](#8-openebs)
 
 ------
 
