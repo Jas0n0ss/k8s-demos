@@ -1,11 +1,41 @@
-# 📘 k8s-demos
+# Kubernetes 实践项目集合
 
-A collection of production-grade Kubernetes deployment demos, including:
+> 一个结构化、可快速导航的 Kubernetes 实用组件与应用示例集合，涵盖网络、存储、应用部署等核心场景。
 
-This repository is designed as a clean, modular reference for building real-world Kubernetes clusters on bare-metal or cloud VMs.
+---
 
-<!-- DIRECTORY TOC START -->
-<!-- DIRECTORY TOC END -->
+## 目录导航
 
-<!-- DIRECTORY HEADERS START -->
-<!-- DIRECTORY HEADERS END -->
+<!-- NAVIGATION PLACEHOLDER - DO NOT REMOVE -->
+- [network](#network)
+  - [ingress-nginx](#ingress-nginx)
+  - [metallb](#metallb)
+  - [traefik](#traefik)
+- [storage](#storage)
+  - [local-path-storage](#local-path-storage)
+  - [nfs-client-provisioner](#nfs-client-provisioner)
+  - [nfs-provisioner](#nfs-provisioner)
+- [apps](#apps)
+  - [alibabacloud-microservice-demo](#alibabacloud-microservice-demo)
+
+- [kubernetes-sample-apps](#kubernetes-sample-apps)
+  <!-- END NAVIGATION PLACEHOLDER -->
+
+---
+
+## network
+
+- [ingress-nginx](#ingress-nginx)
+- [metallb](#metallb)
+- [traefik](#traefik)
+
+## storage
+
+- [local-path-storage](#local-path-storage)
+- [nfs-client-provisioner](#nfs-client-provisioner)
+- [nfs-provisioner](#nfs-provisioner)
+
+## apps
+
+- [alibabacloud-microservice-demo](#alibabacloud-microservice-demo)
+- [kubernetes-sample-apps](#kubernetes-sample-apps)
