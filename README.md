@@ -11,31 +11,15 @@
   - [ingress-nginx](#ingress-nginx)
   - [metallb](#metallb)
   - [traefik](#traefik)
+
 - [storage](#storage)
   - [local-path-storage](#local-path-storage)
   - [nfs-client-provisioner](#nfs-client-provisioner)
   - [nfs-provisioner](#nfs-provisioner)
+
 - [apps](#apps)
   - [alibabacloud-microservice-demo](#alibabacloud-microservice-demo)
 
-- [kubernetes-sample-apps](#kubernetes-sample-apps)
-  <!-- END NAVIGATION PLACEHOLDER -->
+  - [kubernetes-sample-apps](#kubernetes-sample-apps)
+    <!-- END NAVIGATION PLACEHOLDER -->
 
----
-
-## network
-
-- [ingress-nginx](#ingress-nginx)
-- [metallb](#metallb)
-- [traefik](#traefik)
-
-## storage
-
-- [local-path-storage](#local-path-storage)
-- [nfs-client-provisioner](#nfs-client-provisioner)
-- [nfs-provisioner](#nfs-provisioner)
-
-## apps
-
-- [alibabacloud-microservice-demo](#alibabacloud-microservice-demo)
-- [kubernetes-sample-apps](#kubernetes-sample-apps)
