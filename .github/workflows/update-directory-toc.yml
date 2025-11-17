@@ -11,27 +11,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repository using PAT
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          token: ${{ secrets.PAT_TOKEN }}  # Must use PAT for push
+          token: ${{ secrets.PAT_TOKEN }}
           persist-credentials: true
           fetch-depth: 1
 
-      # 2️⃣ Setup Python
+      - name: Configure Git user
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
-      # 3️⃣ Generate TOC + headers
       - name: Generate README TOC and headers
         run: python scripts/generate_directory_toc.py
 
-      # 4️⃣ Commit and push changes
       - name: Commit and push changes
         run: |
           git add README.md
           git diff --cached --quiet || git commit -m "Update directory TOC and headers"
-          git push
+          git push origin HEAD:${GITHUB_REF}
