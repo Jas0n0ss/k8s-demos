@@ -1,0 +1,15 @@
+# rancher-ingressroute.yaml
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata: # ✅ 正确写法：完整的 'metadata'
+  name: rancher-http-route
+  namespace: cattle-system # 必须与 Rancher 部署在同一命名空间
+spec:
+  entryPoints:
+    - web # 监听 HTTP (80端口)
+  routes:
+    - match: Host(`rancher.k8s.io`)
+      kind: Rule
+      services:
+        - name: rancher # 请确认此名称与 `kubectl get svc -n cattle-system` 输出一致
+          port: 80

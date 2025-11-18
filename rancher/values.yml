@@ -1,0 +1,43 @@
+# rancher-values.yml
+# 部署 Rancher Server，使用 Traefik IngressRoute + HTTP + NFS 存储
+
+# 🔁 必须设置：Rancher Server 的主机名 (必须与 IngressRoute 匹配)
+hostname: rancher.k8s.io
+
+# 🔐 设置初始管理员密码
+bootstrapPassword: "adminpassword" # 请务必修改为强密码！
+
+# 🚫 关键：禁用 Rancher 自己的 Ingress 和 TLS 配置
+ingress:
+  enabled: false
+
+providers:
+  # ✅ 必须启用 kubernetesCRD 才能使用 IngressRoute 和 Middleware
+  kubernetesCRD:
+    enabled: true
+  # 如果您同时需要 Ingress，可以也启用它
+  kubernetesIngress:
+    enabled: true # 可选
+
+# 🔑 持久化存储：使用您的 NFS StorageClass
+persistence:
+  enabled: true
+  storageClass:
+    name: nfs-client # 使用您已创建的 nfs-client StorageClass
+  volumeSize: 2Gi # 根据需要调整大小
+
+# 🧱 资源限制 (可根据节点资源调整)
+resources:
+  limits:
+    cpu: 500m
+    memory: 1024Mi
+  requests:
+    cpu: 200m
+    memory: 512Mi
+
+# 🚫 禁用 Rancher 内置的 cert-manager (因为我们不使用 TLS)
+# 此设置在较新版本中可能默认关闭，但显式声明更安全
+global:
+  cattle:
+    ingress:
+      class: "" # 不设置默认 ingress class
