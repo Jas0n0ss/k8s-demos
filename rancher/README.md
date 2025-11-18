@@ -56,9 +56,10 @@ kubectl create namespace cattle-system
 
 ```bash
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/latest/download/cert-manager.yaml
+```
+```bash
 kubectl -n cert-manager get pods
 ```
-
 ##### 3.3 Install Rancher
 
 ```bash
