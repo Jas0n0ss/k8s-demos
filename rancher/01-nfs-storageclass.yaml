@@ -1,0 +1,14 @@
+# 01-nfs-storageclass.yaml
+# 定义 NFS StorageClass，用于动态创建 PV
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: nfs-client # 确保这个名称与下面 PVC 中引用的名称一致
+provisioner: k8s-sigs.io/nfs-subdir-external-provisioner # 这是动态供应器的名称
+parameters:
+  server: 192.168.2.101 # NFS 服务器地址
+  path: /nfs             # NFS 服务器共享的根路径
+  # onDelete: delete # 当 PVC 删除时，对应的 NFS 子目录也会被删除 (或者 'retain')
+  # 也可以设置为 'delete' 或 'retain'，根据需要选择
+reclaimPolicy: Delete # 当 PV 被释放时，删除对应的存储 (也可以设置为 'Retain')
+volumeBindingMode: Immediate # 立即绑定 PV 和 PVC

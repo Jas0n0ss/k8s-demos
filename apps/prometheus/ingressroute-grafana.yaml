@@ -10,5 +10,5 @@ spec:
     - match: Host(`grafana.k8s.io`)
       kind: Rule
       services:
-        - name: grafana               # Grafana service
-          port: 80                    # Grafana service port
+        - name: prometheus-grafana   # Service 名
+          port: 80              # 对应 ClusterIP port

@@ -70,12 +70,18 @@ grafana:
   # Grafana Service 配置
   service:
     # 🔁 将 Grafana Service 类型改为 LoadBalancer
-    type: LoadBalancer
+    type: ClusterIP
     port: 80
     targetPort: 3000
     # 可选：指定 LoadBalancer 的端口 (通常由云服务商自动分配)
     # nodePort: 30000
-
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    hosts:
+      - grafana.k8s.io
+    annotations: {}
+    
   # 其他常见配置 (可根据需要取消注释和调整)
   # adminPassword: "prom-operator" # 默认管理员密码
   # datasources: # 配置数据源

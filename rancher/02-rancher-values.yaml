@@ -1,0 +1,44 @@
+# 02-rancher-values.yaml
+# Rancher Helm Chart 的配置值
+
+# --- 基础配置 ---
+# 设置 Rancher Server 的访问主机名
+hostname: rancher.k8s.io
+
+# 禁用 Rancher Chart 自带的 Ingress，我们使用 Traefik IngressRoute
+ingress:
+  enabled: false
+
+# --- 持久化存储配置 ---
+persistence:
+  # 启用持久化存储
+  enabled: false
+  # 指定使用的 StorageClass，这里使用我们之前创建的 nfs-client
+  #storageClass: "nfs-client"
+  # 设置分配给 Rancher 数据的存储空间大小
+  #size: 5Gi
+  # 访问模式，对于 NFS，ReadWriteOnce 通常足够，且与单副本部署兼容
+  # 如果 NFS 后端和 provisioner 支持，也可以使用 ReadWriteMany
+  #accessMode: ReadWriteOnce
+
+# --- 高级配置 ---
+# 对于使用共享存储（如 NFS）的场景，通常设置为 1 个副本以避免潜在的并发写入问题
+replicas: 1
+
+# (可选) 如果您希望 Rancher Pod 调度到特定的节点，可以设置 nodeSelector
+# nodeSelector:
+#   node-label-key: node-label-value
+
+# (可选) 如果您需要自定义资源限制
+# resources:
+#   limits:
+#     cpu: 500m
+#     memory: 1Gi
+#   requests:
+#     cpu: 250m
+#     memory: 512Mi
+
+# (可选) 如果您使用私有镜像仓库
+# rancherImage: your-private-registry/rancher/rancher
+# rancherImageTag: v2.8.0 # 或其他版本
+# systemDefaultRegistry: your-private-registry # 用于集群内拉取其他镜像

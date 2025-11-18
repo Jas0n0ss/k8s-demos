@@ -1,0 +1,21 @@
+# 03-traefik-ingressroute.yaml
+# 为 Rancher 创建 Traefik IngressRoute
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: rancher
+  namespace: rancher-system # 与 Rancher 部署在同一命名空间
+spec:
+  entryPoints:
+    - web      # 用于 HTTP
+    - websecure # 用于 HTTPS (如果配置了 TLS)
+  routes:
+    - match: Host(`rancher.k8s.io`) # 匹配域名
+      kind: Rule
+      services:
+        - name: rancher            # Rancher Service 的名称 (Helm Chart 自动创建)
+          port: 80                 # Rancher Service 的端口
+  # 可选：配置 TLS (如果使用 HTTPS)
+  # tls:
+  #   # 配置 TLS 证书 (需要先创建证书 Secret)
+  #   # secretName: your-tls-cert-secret

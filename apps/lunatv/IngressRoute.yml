@@ -1,0 +1,15 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: moontv-core
+  namespace: apps
+spec:
+  entryPoints:
+    - web
+    - websecure
+  routes:
+    - match: Host(`tv.k8s.io`)
+      kind: Rule
+      services:
+        - name: moontv-core
+          port: 3000

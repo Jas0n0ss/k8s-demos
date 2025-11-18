@@ -1,0 +1,181 @@
+# apiVersion: v1
+# kind: Namespace
+# metadata:
+#   name: apps
+
+---
+# ============================================================
+# PersistentVolume 直接挂载 NFS 根目录 /nfs
+# ============================================================
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: kvrocks-pv
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs-client
+  nfs:
+    server: 192.168.2.101
+    path: /nfs          # ← 直接使用根目录
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: kvrocks-pvc
+  namespace: apps
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: nfs-client
+  resources:
+    requests:
+      storage: 2Gi
+
+---
+# ============================================================
+# KVROCKS Deployment
+# 自动在 /nfs 里创建 kvrocks 目录 + kvrocks.conf
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: moontv-kvrocks
+  namespace: apps
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: moontv-kvrocks
+  template:
+    metadata:
+      labels:
+        app: moontv-kvrocks
+    spec:
+      # ---- InitContainer: 自动初始化 NFS ----
+      initContainers:
+        - name: init-kvrocks
+          image: busybox
+          command:
+            - sh
+            - -c
+            - |
+              echo "Initializing Kvrocks directory and config..."
+              mkdir -p /data/kvrocks
+              if [ ! -f /data/kvrocks.conf ]; then
+                echo "port 6666" > /data/kvrocks.conf
+                echo "dir /data/kvrocks" >> /data/kvrocks.conf
+                echo "daemonize no" >> /data/kvrocks.conf
+                echo "bind 0.0.0.0" >> /data/kvrocks.conf
+                echo "protected-mode no" >> /data/kvrocks.conf
+                echo "db-directory /data/kvrocks" >> /data/kvrocks.conf
+                echo "Created default kvrocks.conf"
+              fi
+              chmod -R 755 /data
+              ls -la /data  # Debug: show what's in the data directory
+          volumeMounts:
+            - name: kvrocks-data
+              mountPath: /data
+      # ---- 主容器 ----
+      containers:
+        - name: kvrocks
+          image: apache/kvrocks
+          ports:
+            - containerPort: 6666
+          args: ["-c", "/data/kvrocks.conf"]
+          volumeMounts:
+            - name: kvrocks-data
+              mountPath: /data
+      volumes:
+        - name: kvrocks-data
+          persistentVolumeClaim:
+            claimName: kvrocks-pvc
+
+---
+# ============================================================
+# KVROCKS Service
+# ============================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: moontv-kvrocks
+  namespace: apps
+spec:
+  selector:
+    app: moontv-kvrocks
+  ports:
+    - port: 6666
+      targetPort: 6666
+
+---
+# ============================================================
+# MoonTV-Core Deployment
+# ============================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: moontv-core
+  namespace: apps
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: moontv-core
+  template:
+    metadata:
+      labels:
+        app: moontv-core
+    spec:
+      containers:
+        - name: moontv-core
+          image: ghcr.io/moontechlab/lunatv:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: USERNAME
+              value: "admin"
+            - name: PASSWORD
+              value: "Huawei12#$"
+            - name: NEXT_PUBLIC_STORAGE_TYPE
+              value: "kvrocks"
+            - name: KVROCKS_URL
+              value: "redis://moontv-kvrocks:6666"
+
+---
+# ============================================================
+# MoonTV-Core Service
+# ============================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: moontv-core
+  namespace: apps
+spec:
+  selector:
+    app: moontv-core
+  ports:
+    - port: 3000
+      targetPort: 3000
+  type: LoadBalancer
+
+---
+# ============================================================
+# Traefik IngressRoute (访问 http://tv.k8s.io)
+# ============================================================
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: moontv-core
+  namespace: apps
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`tv.k8s.io`)
+      kind: Rule
+      services:
+        - name: moontv-core
+          port: 3000
