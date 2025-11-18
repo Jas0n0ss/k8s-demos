@@ -98,6 +98,8 @@ openssl req -x509 -new -nodes -key rootCA.key -sha256 -days 3650 \
 
 ```bash
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/latest/download/cert-manager.yaml
+```
+```bash
 kubectl -n cert-manager get pods
 ```
 
