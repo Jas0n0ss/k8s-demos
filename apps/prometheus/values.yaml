@@ -56,7 +56,10 @@ grafana:
   # Grafana 的持久化配置
   image:
     repository: grafana/grafana-enterprise  # 使用企业版镜像仓库
-    tag: "latest"                
+    tag: "latest"  
+  # 设置 Grafana 默认管理员账号
+  #adminUser: "admin"              # 👉 自定义用户名
+  #adminPassword: "Passw0rd007"  # 👉 自定义密码（不要用明文上传到 git）              
   persistence:
     enabled: true
     # 🔑 指定使用 NFS StorageClass
