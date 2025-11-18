@@ -54,6 +54,10 @@ providers:
     enabled: false
   kubernetesGateway:
     enabled: false # 禁用 Gateway API
+  kubernetesCRD:
+    enabled: true # 确保启用
+    # 🔑 关键：允许跨命名空间读取 CRD (IngressRoute, Middleware 等)
+    allowCrossNamespace: true
 
 gateway:
   enabled: false # 禁用 Gateway
