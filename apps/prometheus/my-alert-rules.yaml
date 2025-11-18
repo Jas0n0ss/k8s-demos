@@ -1,0 +1,43 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: my-custom-alerts
+  namespace: monitoring
+spec:
+  groups:
+  - name: node-alerts
+    rules:
+    - alert: HighNodeCPU
+      expr: avg(rate(node_cpu_seconds_total{mode="idle"}[5m])) < 0.2
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Node CPU usage high"
+        description: "Node CPU idle < 20% (current value: {{ $value }})"
+    - alert: NodeMemoryUsageHigh
+      expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.8
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Node Memory usage high"
+        description: "Node memory usage > 80% (current value: {{ $value }})"
+  - name: pod-alerts
+    rules:
+    - alert: PodRestartHigh
+      expr: increase(kube_pod_container_status_restarts_total[10m]) > 5
+      for: 10m
+      labels:
+        severity: warning
+      annotations:      
+        summary: "Pod restart count high"
+        description: "Pod has restarted more than 5 times in the last 10 minutes (current value: {{ $value }})"
+    - alert: PodNotReady
+      expr: kube_pod_status_phase{phase="Running"} == 0
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Pod not ready"
+        description: "Pod is not in Ready state for more than 5 minutes"

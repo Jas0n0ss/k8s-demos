@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: test-nfs-pvc
+  namespace: lab
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: nfs-client   # ⚠️ 根据你的实际 StorageClass 修改
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: busybox-nfs-test
+  namespace: lab
+spec:
+  containers:
+  - name: busybox
+    image: busybox
+    command: ["sh", "-c", "while true; do echo $(date) >> /data/test.txt; sleep 5; done"]
+    volumeMounts:
+    - name: nfs-vol
+      mountPath: /data
+  volumes:
+  - name: nfs-vol
+    persistentVolumeClaim:
+      claimName: test-nfs-pvc
+

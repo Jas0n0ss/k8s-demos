@@ -1,0 +1,148 @@
+# prometheus-values.yml
+# 部署 kube-prometheus-stack，配置 NFS 存储和 LoadBalancer Service
+
+# --- Prometheus Server 配置 ---
+prometheus:
+  enabled: true
+  # Prometheus Server 的规格配置
+  prometheusSpec:
+    # 指定镜像版本 (可选，使用 chart 默认值通常即可)
+    image:
+    repository: prom/prometheus
+    tag: latest
+    #   sha: ""
+
+    # 🔑 存储配置：使用 NFS StorageClass
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          # 指定使用您创建的 nfs-client StorageClass
+          storageClassName: nfs-client
+          accessModes: ["ReadWriteOnce"] # NFS 通常支持 RWO
+          resources:
+            requests:
+              storage: 2Gi # 根据需要调整 Prometheus 数据存储大小
+
+    # 其他常见配置 (可根据需要取消注释和调整)
+    # retention: 30d # 数据保留时间
+    # retentionSize: "50GiB" # 数据保留大小限制
+    # ruleSelectorNilUsesHelmValues: false # 是否使用 Helm values 中的 ruleSelector
+    # serviceMonitorSelectorNilUsesHelmValues: false # 是否使用 Helm values 中的 serviceMonitorSelector
+    # podMonitorSelectorNilUsesHelmValues: false # 是否使用 Helm values 中的 podMonitorSelector
+    # probeSelectorNilUsesHelmValues: false # 是否使用 Helm values 中的 probeSelector
+
+# --- Alertmanager 配置 ---
+alertmanager:
+  enabled: true
+  # Alertmanager 的规格配置
+  alertmanagerSpec:
+    # 🔑 存储配置：使用 NFS StorageClass
+    storage:
+      volumeClaimTemplate:
+        spec:
+          # 指定使用您创建的 nfs-client StorageClass
+          storageClassName: nfs-client
+          accessModes: ["ReadWriteOnce"] # NFS 通常支持 RWO
+          resources:
+            requests:
+              storage: 2Gi # 根据需要调整 Alertmanager 数据存储大小
+
+    # 其他常见配置 (可根据需要取消注释和调整)
+    retention: 120h # 告警数据保留时间
+
+# --- Grafana 配置 ---
+grafana:
+  enabled: true
+  # Grafana 的持久化配置
+  image:
+    repository: grafana/grafana-enterprise  # 使用企业版镜像仓库
+    tag: "latest"                
+  persistence:
+    enabled: true
+    # 🔑 指定使用 NFS StorageClass
+    storageClassName: nfs-client
+    size: 5Gi # 根据需要调整 Grafana 数据存储大小
+    # type: pvc # 默认类型
+
+  # Grafana Service 配置
+  service:
+    # 🔁 将 Grafana Service 类型改为 LoadBalancer
+    type: LoadBalancer
+    port: 80
+    targetPort: 3000
+    # 可选：指定 LoadBalancer 的端口 (通常由云服务商自动分配)
+    # nodePort: 30000
+
+  # 其他常见配置 (可根据需要取消注释和调整)
+  # adminPassword: "prom-operator" # 默认管理员密码
+  # datasources: # 配置数据源
+  #   datasources.yaml:
+  #     apiVersion: 1
+  #     datasources:
+  #     - name: Prometheus
+  #       type: prometheus
+  #       url: http://prometheus-server:80 # 默认 Prometheus 服务地址
+  #       access: proxy
+  #       isDefault: true
+  # dashboardProviders: # 配置仪表板提供者
+  #   dashboardproviders.yaml:
+  #     apiVersion: 1
+  #     providers:
+  #     - name: 'default'
+  #       orgId: 1
+  #       folder: ''
+  #       type: file
+  #       disableDeletion: false
+  #       editable: true
+  #       options:
+  #         path: /var/lib/grafana/dashboards/default
+  # dashboards: # 预配置仪表板
+  #   default:
+  #     some-dashboard:
+  #       gnetId: 12345
+  #       revision: 1
+  #       datasource: Prometheus
+
+# --- Prometheus Operator 配置 ---
+prometheusOperator:
+  enabled: true
+  # 可以调整 Operator 自身的资源请求等
+  # resources:
+  #   requests:
+  #     cpu: 200m
+  #     memory: 200Mi
+  #   limits:
+  #     cpu: 200m
+  #     memory: 200Mi
+
+# --- Common (全局) 配置 ---
+# 全局镜像仓库配置 (可选)
+# global:
+#   imageRegistry: ""
+
+# 命名空间配置 (通常在 helm install 时指定，这里也可以设置)
+# namespaceOverride: ""
+
+# 用于测试或调试的配置
+# kubeTargetVersionOverride: ""
+
+# --- 其他组件 ---
+# kube-state-metrics, prometheus-node-exporter 等通常不需要特殊存储配置，保持默认即可。
+# 如果需要为它们指定 Service 类型为 LoadBalancer，可以在此处配置，但通常不推荐。
+# 例如，如果需要将 Prometheus Server 的 Service 也改为 LoadBalancer (虽然通常通过 Ingress 或 NodePort 访问):
+# prometheus:
+#   prometheusSpec:
+#     # ... storageSpec ...
+#   service:
+#     type: LoadBalancer # 不推荐直接暴露 Prometheus Server
+#     # port: 9090
+#     # targetPort: 9090
+
+# 如果需要将 Alertmanager 的 Service 也改为 LoadBalancer:
+# alertmanager:
+#   alertmanagerSpec:
+#     # ... storage ...
+#   service:
+#     type: LoadBalancer # 不推荐直接暴露 Alertmanager UI
+#     # port: 9093
+#     # targetPort: 9093
