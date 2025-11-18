@@ -15,8 +15,6 @@ This guide shows **two common Rancher installation flows** using Traefik as the 
 - For public installs: a DNS A record pointing your hostname to the cluster ingress IP
 - For private installs: ability to import a CA certificate into client browsers/OS
 
----
-
 ##### 1. Install Helm 3
 
 ```bash
@@ -24,8 +22,6 @@ curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bas
 helm repo add rancher-stable https://releases.rancher.com/server-charts/stable
 helm repo update
 ```
-
-------
 
 ##### 2. Install Traefik
 
