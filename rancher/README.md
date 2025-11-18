@@ -28,7 +28,7 @@ helm repo update
 ```bash
 helm repo add traefik https://traefik.github.io/charts
 helm repo update
-
+###
 helm install traefik traefik/traefik \
     --namespace traefik --create-namespace \
     --set service.type=LoadBalancer \
@@ -56,8 +56,6 @@ kubectl create namespace cattle-system
 
 ```bash
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/latest/download/cert-manager.yaml
-```
-```bash
 kubectl -n cert-manager get pods
 ```
 ##### 3.3 Install Rancher
@@ -98,11 +96,8 @@ openssl req -x509 -new -nodes -key rootCA.key -sha256 -days 3650 \
 
 ```bash
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/latest/download/cert-manager.yaml
-```
-```bash
 kubectl -n cert-manager get pods
 ```
-
 ##### 4.3 Create TLS Secret
 
 ```bash
@@ -123,6 +118,9 @@ metadata:
 spec:
   ca:
     secretName: private-ca
+```
+
+```bash
 kubectl apply -f private-ca-issuer.yaml
 ```
 
@@ -157,6 +155,9 @@ spec:
   commonName: rancher.internal.local
   dnsNames:
   - rancher.internal.local
+```
+
+```bash
 kubectl apply -f rancher-certificate.yaml
 kubectl -n cattle-system get certificate
 kubectl -n cattle-system get secret tls-rancher-ingress
