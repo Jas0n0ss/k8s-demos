@@ -1,0 +1,86 @@
+# ✅ values-lb-notls.yaml — Helm values for Traefik v3 with LoadBalancer (No TLS)
+# ✅ Namespace: traefik-system
+
+# -------------------------------
+# 🌐 Ports
+# -------------------------------
+ports:
+  web:
+    port: 80
+    # LoadBalancer 会自动分配外部 IP 和端口
+
+api:
+  dashboard: true
+  insecure: false # 仍然禁用非安全 API，但 Dashboard 将通过 HTTP 暴露
+
+ingressRoute:
+  dashboard:
+    enabled: true
+    # ✅ 使用 Host 匹配规则
+    matchRule: 'Host(`traefik.k8s.io`)'
+    entryPoints:
+      - web # 改为使用 HTTP 入口点
+
+# ✅ 添加 BasicAuth 中间件保护 Dashboard
+# ⚠️ extraObjects: 添加命名空间
+extraObjects:
+  # 🔐 Secret for BasicAuth
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: dashboard-auth-secret
+      namespace: traefik-system # 必须指定命名空间
+    type: kubernetes.io/basic-auth
+    stringData:
+      username: admin
+      password: "P@ssw0rd"
+  
+  # 🔐 Middleware CR
+  - apiVersion: traefik.io/v1alpha1
+    kind: Middleware
+    metadata:
+      name: dashboard-auth
+      namespace: traefik-system # 必须指定命名空间
+    spec:
+      basicAuth:
+        secret: dashboard-auth-secret
+
+# 🚫 禁用旧版 Ingress 和 Gateway
+ingressClass:
+  enabled: false
+
+providers:
+  kubernetesIngress:
+    enabled: false
+  kubernetesGateway:
+    enabled: false # 禁用 Gateway API
+
+gateway:
+  enabled: false # 禁用 Gateway
+
+# -------------------------------
+# 🌐 Service: LoadBalancer
+# -------------------------------
+service:
+  type: LoadBalancer
+  # 可选：添加云服务商特定的注解
+  # annotations:
+  #   service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+
+logs:
+  general:
+    level: INFO
+  access:
+    enabled: true
+
+metrics:
+  prometheus:
+    enabled: true
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi

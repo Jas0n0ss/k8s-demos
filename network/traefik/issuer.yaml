@@ -1,0 +1,16 @@
+# issuer.yaml
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    # Let's Encrypt 生产环境 endpoint（正式证书）
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: admin@msfts.org # 🔔 替换为你的真实邮箱！
+    privateKeySecretRef:
+      name: letsencrypt-prod-key
+    solvers:
+      - http01:
+          ingress:
+            class: traefik  # 注意：Traefik v3 不再用 IngressClass，但 cert-manager 仍认这个
