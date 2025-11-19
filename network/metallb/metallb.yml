@@ -1,11 +1,11 @@
 apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
 metadata:
-  name: home-ip-pool
+  name: homelab-ip-pool
   namespace: metallb-system
 spec:
   addresses:
-  - 10.0.1.100-10.0.1.150  # 分配给 LoadBalancer 的外部 IP
+  - 192.168.2.210-192.168.2.250  # 分配给 LoadBalancer 的外部 IP
 
 ---
 apiVersion: metallb.io/v1beta1
@@ -15,5 +15,5 @@ metadata:
   namespace: metallb-system
 spec:
   ipAddressPools:
-  - home-ip-pool
+  - homelab-ip-pool
 

@@ -19,6 +19,8 @@ helm install nfs-provisioner nfs-subdir-external-provisioner/nfs-subdir-external
     --set nfs.server=192.168.2.101 \
     --set nfs.path=/nfs \
     --namespace kube-system
+
+helm uninstall nfs-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner
 ```
 
 

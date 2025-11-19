@@ -1,0 +1,136 @@
+# values.yaml
+# 命名空间
+namespace: harbor
+
+# 暴露服务配置 - 使用 Traefik Ingress
+expose:
+  type: ingress
+  tls:
+    enabled: true
+    secretName: "harbor-tls"  # 与上面创建的 secret 名称一致
+  ingress:
+    hosts:
+      core: harbor.k8s.io
+    # Traefik 特定注解
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure
+      traefik.ingress.kubernetes.io/router.tls: "true"
+      traefik.ingress.kubernetes.io/router.tls.certresolver: default
+      ingress.kubernetes.io/ssl-redirect: "true"
+    className: traefik  # 指定 ingress class
+
+# 外部访问 URL
+externalURL: https://harbor.k8s.io  
+
+# 管理员密码 (必须修改!)
+harborAdminPassword: "Huawei12#$"
+
+# 禁用非必要组件
+chartmuseum:
+  enabled: false
+notary:
+  enabled: false
+trivy:  # 关键：明确禁用 Trivy
+  enabled: false
+
+# 持久化存储配置 - NFS
+persistence:
+  enabled: true
+  resourcePolicy: "keep"
+  storageClass: "nfs-client"  # 与上面创建的 storageclass 一致
+  
+  persistentVolumeClaim:
+    registry:
+      storageClass: nfs-client
+      accessMode: ReadWriteMany
+      size: 20Gi
+      subPath: "registry"
+    
+    database:
+      storageClass: nfs-client
+      accessMode: ReadWriteMany
+      size: 5Gi
+      subPath: "database"
+    
+    redis:
+      storageClass: nfs-client
+      accessMode: ReadWriteMany
+      size: 5Gi
+      subPath: "redis"
+    
+    jobservice:
+      storageClass: nfs-client
+      accessMode: ReadWriteMany
+      size: 5Gi
+      subPath: "jobservice"
+      # 修复 jobservice 日志权限问题
+      annotations:
+        volume.beta.kubernetes.io/mount-options: "noresvport,nfsvers=4.1"
+    
+    # 完全移除 Trivy 的 PVC 配置 - 不要注释，直接删除这部分
+    # Trivy 被禁用后，不需要为其创建 PVC
+
+# 安全上下文 - 解决 NFS 权限问题
+podSecurityContext:
+  runAsUser: 10000
+  fsGroup: 10000
+  supplementalGroups: [999]  # 包含 postgres 组
+
+# 数据库特定权限配置
+database:
+  internal:
+    # PostgreSQL 需要特定的权限
+    initContainer:
+      permissions:
+        enabled: true
+        image:
+          repository: busybox
+          tag: "1.36"
+        command: ["sh", "-c", "chown -R 999:999 /var/lib/postgresql/data"]
+    # 增加启动延迟
+    livenessProbe:
+      initialDelaySeconds: 300
+    readinessProbe:
+      initialDelaySeconds: 60
+
+# 核心服务配置
+core:
+  startupProbe:
+    initialDelaySeconds: 120
+    periodSeconds: 10
+    failureThreshold: 30
+  
+  # 修复与数据库连接问题
+  existingSecret: ""  # 不使用现有 secret
+  secret: ""  # 让 helm 自动生成
+
+# Jobservice 配置
+jobservice:
+  startupProbe:
+    initialDelaySeconds: 180
+    periodSeconds: 10
+    failureThreshold: 30
+
+# 注册表配置
+registry:
+  relativeurls: true  # 修复 behind proxy 问题
+  upload_purging:
+    enabled: true
+    age: 168h
+    interval: 24h
+
+# 代理配置 (如果需要) - 移除 trivy
+proxy:
+  httpProxy: ""
+  httpsProxy: ""
+  noProxy: "127.0.0.1,localhost,.local,.internal,harbor.k8s.io"
+  components:
+    - core
+    - jobservice
+    # - trivy  # 已禁用，移除此行
+
+# 资源限制 (可选)
+# resources:
+#   limits:
+#     cpu: "2"
+#     memory: 4Gi
